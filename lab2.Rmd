@@ -1,0 +1,98 @@
+---
+title: "Lab 2"
+author: "Braedon Giblin"
+date: "2/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Loading the data...
+
+```{R}
+choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
+str(choco) 
+```
+
+# Searching for the best chocoloates
+
+1.  How are the ratings distributed? Create both a histogram and a boxplot and describe them. Don’t forget to mention outliers, if there are any.
+
+    Answer:
+    Boxplot:
+    ```{R}
+    boxplot(choco$Rating)
+    ```
+    histogram
+    ```{R}
+    hist(choco$Rating)
+    ```
+
+1.  How does the number of ratings depend on the location of the company? Draw a bar chart of the number of reports.
+    
+    Answer:
+    ```{R}
+    tbl <- with(choco, table(choco$Location))
+    barplot(tbl)
+    ```
+    The majoritiy of the reviews are from the United States.
+    
+1.  Do ratings depend on the cacao percentage of a chocolate bar? Create both numerical and graphical summaries, and explain. [Hint: Think about why the scatterplot is not a very good choice for visualization here.]
+
+    Answer:
+    First, I analyzed the cocao content of 4 star, between 3 and 4 stars, and less than 3 star rated chocolates.
+    ### Analyticaly
+    ```{R}
+    fourStar <- choco[choco$Rating == 4,]
+    threeStar <- choco[choco$Rating > 3 && choco$Rating < 4,]
+    ltthreeStar <- choco[choco$Rating <= 3,]
+    
+    cat('Four Star Chocolate -- Cocoa Rating', mean(fourStar$Cocoa_Percent, rm_na=True))
+    cat('\nThree to Four Star Chocolate -- Cocoa Rating', mean(threeStar$Cocoa_Percent, rm_na=True))
+    cat('\nLess than three Star Chocolate -- Cocoa Rating', mean(ltthreeStar$Cocoa_Percent, rm_na=True))
+    ```
+    The evidence suggests that as Cocoa rating increases, the rating actually decreases.
+    
+    ### Graphically:
+    ```{R}
+    type <- reorder(choco$Rating, choco$Cocoa_Percent, mean, na.rm=TRUE)
+    boxplot(choco$Cocoa_Percent ~ type)
+    
+    ```
+1.  How do different bean origins compare in terms of the flavor of chocolates? Are beans from some places better than the other? Create both numerical and graphical summaries, and explain.
+
+    Answer:
+    ```{R}
+    aggregate(choco$Rating ~ choco$Bean_Origin, FUN = mean)
+    ```
+    Uganda beans appear to be rated the highest
+    
+    ```{R}
+    b <- choco[choco$Bean_Origin == 'Uganda',]
+    hist(b$Rating)
+    ```
+    
+1.  Brainstorm two analyses you would like to perform (with your teammates). Describe in plain language what comparisons are you making. Create suitable numerical and graphical summaries for your analyses. Describe the results.
+
+    1.  First analysis - Which location produces the highest rating?
+    
+    ```{R}
+    aggregate(choco$Rating ~ choco$Location, FUN = mean)
+    ```
+    The Chile Locations appear to rate chocolate the highest
+    ```{R}
+    f <- choco[choco$Location == 'Chile',]
+    boxplot(f$Rating)
+    ```
+    1. As chocolate gotten better each year?
+    ```{R}
+    f <- aggregate(choco$Rating ~ choco$Date, FUN = mean, rm_na = True)
+    f
+    ```
+    ```{R}
+    plot(f$`choco$Date`, f$`choco$Rating`)
+    ```
+    
+    The average rating of chocolate has seemed to subtly improved over time. Older dates (2006- 2010) had lower ratings on average than new dates (2018+)
